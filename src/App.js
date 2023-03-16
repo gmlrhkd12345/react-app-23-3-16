@@ -1,35 +1,37 @@
 import './App.css';
-import {useState} from 'react';
-function Counter({title, initValue}){
-  //let countState = useState(initValue);
-  //let count = countState[0];
-  //let setCount = countState[1];
-  let [count, setCount] = useState(initValue);
-  //const up = function(){
-  //  setCount(count+1)
-  //}
-  const up = () => {
-    setCount(count+1)
-    //setCount(function(oldCount){
-    //  console.log("oldCount 1", oldCount);
-    //  return oldCount + 1;
-    //});
-    
-    //setCount((oldCount)=>oldCount + 1);
-  }
-  const down = () => {
-    setCount(count-1)
-  }
-  return <div>
+import {useEffect, useState} from 'react';
+function Counter({title}){
+    const [count, setCount] = useState(0);
+    const change = async (value) => {
+      const resp = await fetch('http://localhost:9999/counter',{
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({value: count+value})
+      });
+      const result = await resp.json();
+      setCount(result.value);
+    }
+    const up = () => change(1);
+    const down = () => change(-1);
+    useEffect(()=>{
+      fetch('http://localhost:9999/counter')
+        .then(res=>res.json())
+        .then(result=>{ 
+          setCount(result.value);
+        })
+    })
+  return <>
     <h1>{title}</h1> 
-    <button onClick={up}>💘</button><button onClick={down}>💘</button> 👉 {count}
-  </div>
+    <button style={{marginRight : "10px"}} onClick={up}>💘</button>
+    <button className ="spaceRight" onClick={down}>💘</button> 👉 {count}
+  </>
 }
 function App() {
   return (
     <div>
-      <Counter title="불면증 카운터" initValue={10} initValue1={10}></Counter>
-      <Counter title="입장객 카운터" initValue={20}></Counter>
+      <Counter title="참여자 카운터" ></Counter>
     </div>
   );
 }
